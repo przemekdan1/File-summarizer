@@ -1,0 +1,3 @@
+Witaj świecie!
+Dzisiaj jest piękny dzień.
+Uczymy się Pythona.

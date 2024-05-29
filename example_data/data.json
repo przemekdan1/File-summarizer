@@ -1,0 +1,20 @@
+[
+    {
+        "marka": "Toyota",
+        "model": "Corolla",
+        "rok": 2020,
+        "kolor": "czerwony"
+    },
+    {
+        "marka": "Ford",
+        "model": "Focus",
+        "rok": 2018,
+        "kolor": "niebieski"
+    },
+    {
+        "marka": "Volkswagen",
+        "model": "Golf",
+        "rok": 2019,
+        "kolor": "biały"
+    }
+]
