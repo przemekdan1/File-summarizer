@@ -6,21 +6,23 @@ import pandas as pd
 import numpy as np
 
 
+def read_file(filepath):
+    """ Helper function to safely read a file and handle exceptions. """
+    try:
+        with open(filepath, 'r', encoding='utf-8') as file:
+            return file.read()
+    except Exception as e:
+        print(f"Failed to read file: {e}")
+        return None
+
+
 def summarize_csv_file(filepath):
-    """ Extracts unique values from each column in a CSV file and computes statistical measures for numerical columns.
-
-    Args:
-    filepath (str): Path to the CSV file.
-
-    Returns:
-    dict: JSON compatible dictionary containing unique values for each column and statistical summaries for numerical columns.
-    """
+    """Extracts unique values from each column in a CSV file and computes statistical measures for numerical columns."""
     try:
         data = pd.read_csv(filepath)
         summary = {}
 
         for column in data.columns:
-            # Ensure compatibility of numpy types with JSON
             unique_values = [x.item() if isinstance(x, np.generic) else x for x in data[column].dropna().unique()]
             summary[column] = {'Unique Values': unique_values}
 
@@ -32,57 +34,46 @@ def summarize_csv_file(filepath):
                     'Standard Deviation': float(data[column].std())
                 })
 
-        return summary  # return Python dictionary directly
+        return summary
     except Exception as e:
         print(f"Failed to process CSV file: {e}")
         return {}
 
 
 def summarize_text_file(filepath):
-    """Summarizes a text file, calculating the number of rows, words, characters, and searches for emails and phone numbers.
-
-    Args:
-    filepath (str): Path to the text file.
-
-    Returns:
-    str: JSON string containing the number of rows, words, characters, emails, and phone numbers.
-    """
+    """Summarizes a text file, calculating the number of rows, words, characters, and searches for emails and phone numbers."""
     email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
     phone_pattern = r'\b\d{9}\b'
+    content = read_file(filepath)
 
-    try:
-        with open(filepath, 'r', encoding='utf-8') as file:
-            content = file.read()
-            summary = {
-                "Number of rows": content.count('\n') + 1,
-                "Number of words": len(content.split()),
-                "Number of characters": len(content),
-                "Email addresses": re.findall(email_pattern, content),
-                "Phone numbers": re.findall(phone_pattern, content)
-            }
-            return summary
-    except Exception as e:
-        return json.dumps({})
+    if content is None:
+        return {}
+
+    summary = {
+        "Number of rows": content.count('\n') + 1,
+        "Number of words": len(content.split()),
+        "Number of characters": len(content),
+        "Email addresses": re.findall(email_pattern, content),
+        "Phone numbers": re.findall(phone_pattern, content)
+    }
+    return summary
 
 
 def summarize_json_file(filepath):
-    """Summarizes a JSON file, calculating the number of rows, words, and characters.
+    """Summarizes a JSON file, calculating the number of rows, words, and characters."""
+    content = read_file(filepath)
 
-    Args:
-    filepath (str): Path to the JSON file.
+    if content is None:
+        return {}
 
-    Returns:
-    str: JSON string containing the number of rows, words, and characters.
-    """
     try:
-        with open(filepath, 'r', encoding='utf-8') as file:
-            data = json.load(file)
-
+        data = json.loads(content)
         summary = {'Number of rows': 0, 'Number of words': 0, 'Number of characters': 0}
         process_json_content(data, summary)
         return summary
     except Exception as e:
-        return json.dumps({})
+        print(f"Failed to process JSON file: {e}")
+        return {}
 
 
 def process_json_content(element, summary):
@@ -103,19 +94,17 @@ def process_json_content(element, summary):
 
 
 def summarize_files_in_folder(directory):
+    results = {}
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
         if os.path.isfile(filepath):
             if filename.endswith('.csv'):
-                summary = summarize_csv_file(filepath)
+                results[filename] = summarize_csv_file(filepath)
             elif filename.endswith('.json'):
-                summary = summarize_json_file(filepath)
+                results[filename] = summarize_json_file(filepath)
             elif filename.endswith('.txt'):
-                summary = summarize_text_file(filepath)
-            else:
-                continue
-            return summary
-
+                results[filename] = summarize_text_file(filepath)
+    return results
 
 if __name__ == "__main__":
     source_directory = 'example_data/'
