@@ -7,36 +7,35 @@ import numpy as np
 
 
 def summarize_csv_file(filepath):
-    """Extracts unique values from each column in a CSV file and computes statistical measures for numerical columns.
+    """ Extracts unique values from each column in a CSV file and computes statistical measures for numerical columns.
 
     Args:
     filepath (str): Path to the CSV file.
 
     Returns:
-    str: JSON string containing unique values for each column and statistical summaries for numerical columns.
+    dict: JSON compatible dictionary containing unique values for each column and statistical summaries for numerical columns.
     """
     try:
         data = pd.read_csv(filepath)
         summary = {}
 
         for column in data.columns:
-            unique_values = data[column].dropna().unique().tolist()
-            summary[column] = {
-                'Unique Values': [x.item() if isinstance(x, np.generic) else x for x in unique_values]
-            }
+            # Ensure compatibility of numpy types with JSON
+            unique_values = [x.item() if isinstance(x, np.generic) else x for x in data[column].dropna().unique()]
+            summary[column] = {'Unique Values': unique_values}
 
             if pd.api.types.is_numeric_dtype(data[column]):
                 summary[column].update({
-                    'Sum': data[column].sum().item(),
-                    'Average': data[column].mean().item(),
-                    'Median': data[column].median().item(),
-                    'Standard Deviation': data[column].std().item()
+                    'Sum': float(data[column].sum()),
+                    'Average': float(data[column].mean()),
+                    'Median': float(data[column].median()),
+                    'Standard Deviation': float(data[column].std())
                 })
 
-        return json.dumps(summary, indent=4)
+        return summary  # return Python dictionary directly
     except Exception as e:
-        print(f"Failed to read the CSV file: {e}")
-        return json.dumps({})
+        print(f"Failed to process CSV file: {e}")
+        return {}
 
 
 def summarize_text_file(filepath):
@@ -61,9 +60,8 @@ def summarize_text_file(filepath):
                 "Email addresses": re.findall(email_pattern, content),
                 "Phone numbers": re.findall(phone_pattern, content)
             }
-            return json.dumps(summary, indent=4)
+            return summary
     except Exception as e:
-        print(f"Failed to read the text file: {e}")
         return json.dumps({})
 
 
@@ -82,9 +80,8 @@ def summarize_json_file(filepath):
 
         summary = {'Number of rows': 0, 'Number of words': 0, 'Number of characters': 0}
         process_json_content(data, summary)
-        return json.dumps(summary, indent=4)
+        return summary
     except Exception as e:
-        print(f"Failed to read the JSON file: {e}")
         return json.dumps({})
 
 
@@ -116,10 +113,8 @@ def summarize_files_in_folder(directory):
             elif filename.endswith('.txt'):
                 summary = summarize_text_file(filepath)
             else:
-                print(f"Unsupported file type for file: {filename}")
                 continue
-            print(f"Summary for {filename}:")
-            print(summary)
+            return summary
 
 
 if __name__ == "__main__":
