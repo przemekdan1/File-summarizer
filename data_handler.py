@@ -23,15 +23,14 @@ def summarize_csv_file(filepath):
             unique_values = data[column].dropna().unique().tolist()
             summary[column] = {
                 'Unique Values': [x.item() if isinstance(x, np.generic) else x for x in unique_values]
-                # Convert NumPy types to native Python types
             }
 
             if pd.api.types.is_numeric_dtype(data[column]):
                 summary[column].update({
-                    'Sum': data[column].sum().item(),  # Convert to native Python int/float
-                    'Average': data[column].mean().item(),  # Convert to native Python float
-                    'Median': data[column].median().item(),  # Convert to native Python float
-                    'Standard Deviation': data[column].std().item()  # Convert to native Python float
+                    'Sum': data[column].sum().item(),
+                    'Average': data[column].mean().item(),
+                    'Median': data[column].median().item(),
+                    'Standard Deviation': data[column].std().item()
                 })
 
         return json.dumps(summary, indent=4)
