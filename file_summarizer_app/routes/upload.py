@@ -6,7 +6,7 @@ from prometheus_client import Counter, Histogram, Gauge
 
 from file_summarizer_app.services.data_handler import summarize_text_file, summarize_csv_file, summarize_json_file
 
-# Metrics definitions
+
 FILES_PROCESSED = Counter('files_processed_total', 'Total number of files processed')
 FILE_PROCESSING_TIME = Histogram('file_processing_seconds', 'Time spent processing a file')
 PROCESSING_ERRORS = Counter('file_processing_errors_total', 'Total file processing errors encountered')
@@ -48,4 +48,3 @@ def upload_file():
             finally:
                 os.unlink(temp.name)  # Delete the file after processing
                 PROCESSING_IN_PROGRESS.dec()  # Decrement gauge
-hit
