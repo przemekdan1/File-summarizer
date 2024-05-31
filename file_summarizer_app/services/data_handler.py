@@ -7,7 +7,6 @@ import numpy as np
 
 
 def read_file(filepath):
-    """ Helper function to safely read a file and handle exceptions. """
     try:
         with open(filepath, 'r', encoding='utf-8') as file:
             return file.read()
@@ -17,7 +16,6 @@ def read_file(filepath):
 
 
 def summarize_csv_file(filepath):
-    """Extracts unique values from each column in a CSV file and computes statistical measures for numerical columns."""
     try:
         data = pd.read_csv(filepath)
         summary = {}
@@ -41,7 +39,6 @@ def summarize_csv_file(filepath):
 
 
 def summarize_text_file(filepath):
-    """Summarizes a text file, calculating the number of rows, words, characters, and searches for emails and phone numbers."""
     email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
     phone_pattern = r'\b\d{9}\b'
     content = read_file(filepath)
@@ -60,7 +57,6 @@ def summarize_text_file(filepath):
 
 
 def summarize_json_file(filepath):
-    """Summarizes a JSON file, calculating the number of rows, words, and characters."""
     content = read_file(filepath)
 
     if content is None:

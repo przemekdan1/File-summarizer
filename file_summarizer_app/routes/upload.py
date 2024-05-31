@@ -16,21 +16,21 @@ upload = Blueprint('upload', __name__)
 
 @upload.route('/upload', methods=['POST'])
 def upload_file():
-    PROCESSING_IN_PROGRESS.inc()  # Increment gauge for in-progress processing
-    with FILE_PROCESSING_TIME.time():  # Measure the time taken to process the file
+    PROCESSING_IN_PROGRESS.inc()
+    with FILE_PROCESSING_TIME.time():
         if 'file' not in request.files:
-            PROCESSING_IN_PROGRESS.dec()  # Decrement gauge
+            PROCESSING_IN_PROGRESS.dec()
             return jsonify({'error': 'No file part'}), 400
         file = request.files['file']
         if file.filename == '':
-            PROCESSING_IN_PROGRESS.dec()  # Decrement gauge
+            PROCESSING_IN_PROGRESS.dec()
             return jsonify({'error': 'No selected file'}), 400
         if file:
             suffix = os.path.splitext(file.filename)[1]
             temp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
             try:
                 file.save(temp.name)
-                temp.close()  # Ensure the file is closed before processing
+                temp.close()
                 if suffix in ['.csv']:
                     result = summarize_csv_file(temp.name)
                 elif suffix in ['.txt']:
@@ -38,13 +38,13 @@ def upload_file():
                 elif suffix in ['.json']:
                     result = summarize_json_file(temp.name)
                 else:
-                    PROCESSING_ERRORS.inc()  # Increment error counter
+                    PROCESSING_ERRORS.inc()
                     return jsonify({'error': 'Unsupported file type'}), 400
-                FILES_PROCESSED.inc()  # Increment counter for processed files
+                FILES_PROCESSED.inc()
                 return jsonify(result), 200
             except Exception as e:
-                PROCESSING_ERRORS.inc()  # Increment error counter
+                PROCESSING_ERRORS.inc()
                 return jsonify({'error': str(e)}), 500
             finally:
-                os.unlink(temp.name)  # Delete the file after processing
-                PROCESSING_IN_PROGRESS.dec()  # Decrement gauge
+                os.unlink(temp.name)
+                PROCESSING_IN_PROGRESS.dec()
